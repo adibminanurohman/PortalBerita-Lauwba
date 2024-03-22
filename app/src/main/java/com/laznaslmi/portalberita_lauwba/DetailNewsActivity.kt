@@ -15,7 +15,6 @@ import com.laznaslmi.portalberita_lauwba.network.NetworkConfig
 import retrofit2.Call
 import retrofit2.Response
 
-
 class DetailNewsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailNewsBinding
@@ -26,18 +25,20 @@ class DetailNewsActivity : AppCompatActivity() {
         binding = ActivityDetailNewsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //set title
+        // Set judul halaman
         supportActionBar?.title = "Detail Berita"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        //receive incoming intent extras
+        // Mendapatkan data yang diterima dari intent
         val idNews = intent.getStringExtra("idNews")
         urlSeo = intent.getStringExtra("judulSeo")
+
+        // Memanggil fungsi untuk mendapatkan detail berita
         getDetailNews(idNews)
     }
 
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        // Menambahkan menu untuk membuka halaman berita pada browser
         menu?.add(0, 0, 0, "View On Browser")
         return super.onCreateOptionsMenu(menu)
     }
@@ -45,11 +46,12 @@ class DetailNewsActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> onBackPressed()
-            0 -> openInBrowser()
+            0 -> openInBrowser() // Menangani klik pada menu untuk membuka halaman berita pada browser
         }
         return super.onOptionsItemSelected(item)
     }
 
+    // Fungsi untuk membuka halaman berita pada browser menggunakan CustomTabsIntent
     private fun openInBrowser() {
         val initialUrl = NetworkConfig().BASE_URL + "reader/" + this.urlSeo
         val builder = CustomTabsIntent.Builder()
@@ -57,6 +59,7 @@ class DetailNewsActivity : AppCompatActivity() {
         customTabsIntent.launchUrl(this, Uri.parse(initialUrl))
     }
 
+    // Fungsi untuk memanggil API dan mendapatkan detail berita
     private fun getDetailNews(idNews: String?) {
         NetworkConfig().getService()
             .getDetailNews(idNews)
@@ -65,15 +68,19 @@ class DetailNewsActivity : AppCompatActivity() {
                     call: Call<ResponseDetailBerita>,
                     response: Response<ResponseDetailBerita>
                 ) {
+                    // Sembunyikan ProgressBar setelah mendapatkan respon
                     this@DetailNewsActivity.binding.progressIndicator.visibility = View.GONE
                     if (response.isSuccessful) {
                         val detailData = response.body()
+                        // Set data ke tampilan
                         setToView(detailData)
                     }
                 }
 
                 override fun onFailure(call: Call<ResponseDetailBerita>, t: Throwable) {
+                    // Sembunyikan ProgressBar jika terjadi kesalahan
                     this@DetailNewsActivity.binding.progressIndicator.visibility = View.GONE
+                    // Tampilkan pesan kesalahan menggunakan Toast
                     t.printStackTrace()
                     Toast.makeText(this@DetailNewsActivity, t.localizedMessage, Toast.LENGTH_SHORT)
                         .show()
@@ -81,6 +88,7 @@ class DetailNewsActivity : AppCompatActivity() {
             })
     }
 
+    // Fungsi untuk menetapkan data detail berita ke tampilan
     private fun setToView(detailData: ResponseDetailBerita?) {
         this.binding.judul.text = detailData?.jdlNews
         this.binding.isi.text = detailData?.ketNews
